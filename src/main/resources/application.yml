@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: crud
+  datasource:
+    url: jdbc:postgresql://10.14.204.222:2345/iconpay?currentSchema=public
+    hikari:
+      username: iconpay
+      password: AcpeRJU7R9bJxxYc3$u2g$JL
+  jpa:
+    show-sql: true
