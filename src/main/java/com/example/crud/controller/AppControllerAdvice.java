@@ -17,13 +17,13 @@ public class AppControllerAdvice {
     @ExceptionHandler({RuntimeException.class})
     @ResponseBody
     public ResponseEntity<?> systemErrorException(Exception exception, HttpServletResponse res, HttpServletRequest req) {
-        writeErrorStackTrace(exception, req.getMethod() + req.getServletPath());
+        writeErrorStackTrace(exception, req.getMethod() + " " + req.getServletPath());
         return ResponseEntity.status(500)
                 .body(Map.of("error", exception.getMessage()));
     }
 
     private void writeErrorStackTrace(Exception exception, String apiInfo) {
-        String stackTrace = "Error Exception: " + exception.getClass().getName() + ExceptionUtils.getStackTrace(exception);
+        String stackTrace = "[" + apiInfo + "] " + "Error Exception: " + exception.getClass().getName() + ExceptionUtils.getStackTrace(exception);
         log.error(stackTrace);
     }
 }
