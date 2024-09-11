@@ -8,6 +8,7 @@ import lombok.Data;
 @Table(name = "test_master_product")
 public class MasterProductEntity {
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
 
     private String productName;
