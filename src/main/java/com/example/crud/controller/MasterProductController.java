@@ -1,6 +1,7 @@
 package com.example.crud.controller;
 
 import com.example.crud.dto.AddProductReq;
+import com.example.crud.dto.EditExpiredReq;
 import com.example.crud.dto.EditPriceReq;
 import com.example.crud.service.MasterProductService;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,12 @@ public class MasterProductController {
     @PostMapping("/product/edit")
     public ResponseEntity<?> addProduct(@RequestBody EditPriceReq req) {
         var response = masterProductService.editProductPrice(req);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/product/edit/expired")
+    public ResponseEntity<?> addProduct(@RequestBody EditExpiredReq req) {
+        var response = masterProductService.editExpiredDate(req);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

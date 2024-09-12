@@ -3,6 +3,8 @@ package com.example.crud.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "test_master_product")
@@ -16,4 +18,6 @@ public class MasterProductEntity {
     private Long price;
 
     private String description;
+
+    private LocalDateTime expiredDate;
 }

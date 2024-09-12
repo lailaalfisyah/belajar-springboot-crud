@@ -1,12 +1,16 @@
 package com.example.crud.service;
 
 import com.example.crud.dto.AddProductReq;
+import com.example.crud.dto.EditExpiredReq;
 import com.example.crud.dto.EditPriceReq;
 import com.example.crud.entity.MasterProductEntity;
 import com.example.crud.repo.MasterProductRepo;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
 
 @Service
 public class MasterProductService {
@@ -16,8 +20,13 @@ public class MasterProductService {
         this.masterProductRepo = masterProductRepo;
     }
 
-    public List<MasterProductEntity> getAllProductData() {
-        return masterProductRepo.findAll();
+    public Map<String, Object> getAllProductData() {
+        var allData = masterProductRepo.findAll();
+        return Map.of(
+                "totalAllData", allData.size(),
+                "totalExpData", allData.stream()
+                        .filter(data -> data.getExpiredDate() != null && data.getExpiredDate().isBefore(LocalDateTime.now())).count(),
+                "data", allData);
     }
 
     public MasterProductEntity getProductById(Long id) {
@@ -25,6 +34,10 @@ public class MasterProductService {
     }
 
     public MasterProductEntity addProduct(AddProductReq request) {
+        if (StringUtils.isBlank(request.getProductName()) || StringUtils.isBlank(request.getDescription()) || request.getPrice() == null) {
+            throw new RuntimeException("productName, price, dan description harus diisi");
+        }
+
         MasterProductEntity product = new MasterProductEntity();
         product.setProductName(request.getProductName());
         product.setPrice(request.getPrice());
@@ -35,6 +48,20 @@ public class MasterProductService {
     public MasterProductEntity editProductPrice(EditPriceReq request) {
         MasterProductEntity product = masterProductRepo.findById(request.getId()).orElseThrow(() -> new RuntimeException("Data not found!"));
         product.setPrice(request.getPrice());
+        return masterProductRepo.save(product);
+    }
+
+    public MasterProductEntity editExpiredDate(EditExpiredReq req) {
+        MasterProductEntity product = masterProductRepo.findById(req.getId()).orElseThrow(() -> new RuntimeException("Data not found!"));
+
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime newExpDate = LocalDateTime.parse(req.getNewExpDate(), dateFormatter);
+        if (product.getExpiredDate() != null && (newExpDate.isBefore(now) || newExpDate.isBefore(product.getExpiredDate()))) {
+            throw new RuntimeException("newExpDate harus lebih dari waktu saat ini dan lebih dari waktu expired yang sebelumnya.");
+        }
+
+        product.setExpiredDate(newExpDate);
         return masterProductRepo.save(product);
     }
 }
