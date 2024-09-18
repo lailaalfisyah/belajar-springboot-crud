@@ -5,27 +5,38 @@ import com.example.crud.dto.EditExpiredReq;
 import com.example.crud.dto.EditPriceReq;
 import com.example.crud.entity.MasterProductEntity;
 import com.example.crud.repo.MasterProductRepo;
+import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @Service
 public class MasterProductService {
     private final MasterProductRepo masterProductRepo;
+    private final EntityManager entityManager;
 
-    public MasterProductService(MasterProductRepo masterProductRepo) {
+    public MasterProductService(MasterProductRepo masterProductRepo, EntityManager entityManager) {
         this.masterProductRepo = masterProductRepo;
+        this.entityManager = entityManager;
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getAllProductData() {
-        var allData = masterProductRepo.findAll();
+//        var allData = masterProductRepo.findAll();
+//        return Map.of(
+//                "totalAllData", allData.size(),
+//                "totalExpData", allData.stream()
+//                        .filter(data -> data.getExpiredDate() != null && data.getExpiredDate().isBefore(LocalDateTime.now())).count(),
+//                "data", allData);
+        List<Map<String, Object>> allData = entityManager.createNativeQuery("SELECT * FROM test_master_product").getResultList();
         return Map.of(
                 "totalAllData", allData.size(),
                 "totalExpData", allData.stream()
-                        .filter(data -> data.getExpiredDate() != null && data.getExpiredDate().isBefore(LocalDateTime.now())).count(),
+                        .filter(data -> data.get("expired_date") != null && ((LocalDateTime) data.get("expired_date")).isBefore(LocalDateTime.now())).count(),
                 "data", allData);
     }
 
