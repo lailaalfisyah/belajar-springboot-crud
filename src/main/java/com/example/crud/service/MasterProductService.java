@@ -5,12 +5,19 @@ import com.example.crud.dto.EditExpiredReq;
 import com.example.crud.dto.EditPriceReq;
 import com.example.crud.entity.MasterProductEntity;
 import com.example.crud.repo.MasterProductRepo;
+import com.example.crud.utility.StringUtil;
 import jakarta.persistence.EntityManager;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.CaseUtils;
+import org.hibernate.query.sql.internal.NativeQueryImpl;
+import org.hibernate.transform.AliasToEntityMapResultTransformer;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +31,7 @@ public class MasterProductService {
         this.entityManager = entityManager;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "deprecation"})
     public Map<String, Object> getAllProductData() {
 //        var allData = masterProductRepo.findAll();
 //        return Map.of(
@@ -32,12 +39,13 @@ public class MasterProductService {
 //                "totalExpData", allData.stream()
 //                        .filter(data -> data.getExpiredDate() != null && data.getExpiredDate().isBefore(LocalDateTime.now())).count(),
 //                "data", allData);
-        List<Map<String, Object>> allData = entityManager.createNativeQuery("SELECT * FROM test_master_product").getResultList();
+        List<Map<String, Object>> allData = ((NativeQueryImpl) entityManager.createNativeQuery("SELECT * FROM test_master_product"))
+                .setResultTransformer(AliasToEntityMapResultTransformer.INSTANCE).getResultList();
         return Map.of(
                 "totalAllData", allData.size(),
                 "totalExpData", allData.stream()
-                        .filter(data -> data.get("expired_date") != null && ((LocalDateTime) data.get("expired_date")).isBefore(LocalDateTime.now())).count(),
-                "data", allData);
+                        .filter(data -> data.get("expired_date") != null && ((Instant) data.get("expired_date")).isBefore(OffsetDateTime.now().toInstant())).count(),
+                "data", StringUtil.toCamelCase(allData));
     }
 
     public MasterProductEntity getProductById(Long id) {
